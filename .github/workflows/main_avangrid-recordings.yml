@@ -72,9 +72,6 @@ jobs:
       - name: Set Function App Settings (Storage Account, Container, and Key)
         run: |
           az functionapp config appsettings set --name avangrid-recordings --resource-group MyResourceGroup --settings \
-          AZURE_STORAGE_ACCOUNT=${{ secrets.AZURE_STORAGE_ACCOUNT }} \
-          AZURE_STORAGE_CONTAINER=${{ secrets.AZURE_STORAGE_CONTAINER }} \
-          AZURE_STORAGE_KEY=${{ secrets.AZURE_STORAGE_KEY }} \
           AzureWebJobsStorage=${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
 
       - name: 'Deploy to Azure Functions'
@@ -84,4 +81,5 @@ jobs:
           app-name: 'avangrid-recordings'
           slot-name: 'Production'
           package: 'release.zip'
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
          
