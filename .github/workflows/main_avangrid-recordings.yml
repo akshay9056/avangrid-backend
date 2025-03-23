@@ -11,14 +11,14 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
-  PYTHON_VERSION: '3.10' # set this to the python version to use (supports 3.6, 3.7, 3.8)
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # Path to the project
+  PYTHON_VERSION: '3.10' # Python version
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read # Required for checkout
 
     steps:
       - name: Checkout repository
@@ -37,8 +37,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Optional: Add step to run tests here
-
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
 
@@ -54,8 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write # Required for requesting JWT
+      contents: read # Required for checkout
 
     steps:
       - name: Download artifact from build job
@@ -65,19 +63,18 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip     
-        
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C2D8169F11AA455787E8CEE648C966C7 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5E46DA1CF7404F5584D2F34E7AF4080A }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E858A38B90374B5A85E87E8AE6BB26F8 }}
 
-      - name: 'Deploy to Azure Functions'
-        uses: Azure/functions-action@v1
-        id: deploy-to-function
+      - name: Login to Azure (Using Publish Profile)
+        uses: azure/webapps-deploy@v2
         with:
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
           app-name: 'avangrid-recordings'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          
+
+      - name: Configure Azure Storage Account Settings
+        run: |
+          az functionapp config appsettings set --name avangrid-recordings --resource-group <your_resource_group> --settings \
+          AZURE_STORAGE_ACCOUNT=${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+          AZURE_STORAGE_CONTAINER=${{ secrets.AZURE_STORAGE_CONTAINER }} \
+          AZURE_STORAGE_KEY=${{ secrets.AZURE_STORAGE_KEY }}
