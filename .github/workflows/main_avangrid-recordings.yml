@@ -67,7 +67,7 @@ jobs:
       - name: Login to Azure (Using Publish Profile)
         uses: azure/webapps-deploy@v2
         with:
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ vars.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
           app-name: 'avangrid-recordings'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
